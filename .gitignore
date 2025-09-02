@@ -41,5 +41,8 @@
 *.dwo
 
 #image files
-
+*cmake
 *.png
+
+#vscode
+.vscode

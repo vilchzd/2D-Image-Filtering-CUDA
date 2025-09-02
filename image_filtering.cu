@@ -10,9 +10,26 @@ __global__ void matrix(float *in, float *out, int width, int height) {
     int y = threadIdx.y;
     mat[x * width + y] = in[x * width + y]; 
     __syncthreads();
-    mat[x * width + y] /= 10; 
-    out[x * width + y] = mat[x * width + y]; 
-}
+ 
+    float blur_sum = 0;
+    float count = 0;
+    float average = 0;
+
+    for (int grid_y = -1; grid_y < 2; grid_y++) {
+        for (int grid_x = -1; grid_x < 2; grid_x++) {
+            int blur_x = x + grid_x;
+            int blur_y = y + grid_y;
+            if (blur_x >= 0 && blur_x < width && blur_y >= 0 && blur_y < height) {
+                blur_sum += mat[blur_x * width + blur_y];
+                count++;
+            }
+        }
+    }
+    average = blur_sum / count;
+    mat[x * width + y] = average;
+    out[x * width + y] = mat[x * width + y];             
+} 
+
 
 int main() {
     const int width = 5, height = 5;

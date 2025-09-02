@@ -12,7 +12,7 @@ void cpu_blur(int height, int width, int* in, int* out) {
                     int blur_y = y + grid_y;
                     int blur_x = x + grid_x;
                     if (blur_y >= 0 && blur_x >= 0 && blur_y < height && blur_x < width) {
-                        blur_sum += in[blur_y * width + blur_x];
+                        blur_sum += in[blur_x * width + blur_y];
                         count++;
                         }
                 }
