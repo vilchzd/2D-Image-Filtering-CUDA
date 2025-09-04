@@ -1,12 +1,11 @@
 #include <iostream>
 using namespace std;
 
-void cpu_blur(int height, int width, int* in, int* out) {
+void cpu_blur(int height, int width, unsigned char* in, unsigned char* out) {
     for (int y = 0; y < height; y++) {
         for (int x = 0; x < width; x++) {
             int blur_sum = 0;
             int count = 0;
-            int average = 0;
             for (int grid_y = -1; grid_y < 2; grid_y++) {
                 for (int grid_x = -1; grid_x < 2; grid_x++) {
                     int blur_y = y + grid_y;
@@ -17,8 +16,7 @@ void cpu_blur(int height, int width, int* in, int* out) {
                         }
                 }
             }
-            average = blur_sum / count;
-            out[y * width + x] = average;
+            out[y * width + x] = blur_sum / count;
         }  
     }      
     for (int yo = 0; yo < height; yo++) {

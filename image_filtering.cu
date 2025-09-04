@@ -1,6 +1,8 @@
 #include <iostream>   
 #include <cstdlib>   
 #include <cuda_runtime.h>
+#include <opencv2/opencv.hpp>
+
 
 using namespace std;
 
@@ -32,6 +34,7 @@ __global__ void matrix(float *in, float *out, int width, int height) {
 
 
 int main() {
+    std::cout << "OpenCV version: " << CV_VERSION << std::endl;
     const int width = 5, height = 5;
     float *d_in, *d_out; 
     float *h_in = (float*)malloc(height*width*sizeof(float));
