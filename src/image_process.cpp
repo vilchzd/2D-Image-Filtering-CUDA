@@ -13,21 +13,20 @@ void image_process(const std::string& file_name, unsigned char*& input, unsigned
         exit(1);
     }
 
-    std::cout << "Channels: " << image.channels() << std::endl;
+    std::cout << "Image size: " << image.cols << "x" << image.rows << ", Channels: " << image.channels() << std::endl;
     if (channels == 1 && image.channels() != 1) {
         cv::cvtColor(image, image, (image.channels() == 4) ? cv::COLOR_BGRA2GRAY : cv::COLOR_BGR2GRAY);
-        std::cout << "Converted "<< image.channels() << "-channel image to 1-channel GRAY." << std::endl;
+        std::cout << "Converted "<< image.channels() << "-channel image to 1-channel GRAY" << std::endl;
     } 
-    else if (channels == 3 && image.channels() != 3) {
+    else if ((channels == 3 || channels == 4) && image.channels() != 3) {
+        std::cout << "Converted "<< image.channels() << "-channel image to 3-channel BGR" << std::endl;
         cv::cvtColor(image, image, (image.channels() == 4) ? cv::COLOR_BGRA2BGR : cv::COLOR_GRAY2BGR);
-        std::cout << "Converted "<< image.channels() << "-channel image to 3-channel BGR." << std::endl;
     } else {
         std::cerr << "Unsupported image format: " << channels << std::endl;
         exit(1);
     }
-
-    std::cout << "Image size: " << image.cols << "x" << image.rows << std::endl;
-    std::cout << "Channels: " << image.channels() << std::endl;
+ 
+    channels = image.channels();
     width = image.cols;
     height = image.rows;
     int size = image.rows * image.cols * image.channels();
@@ -40,6 +39,7 @@ void image_process(const std::string& file_name, unsigned char*& input, unsigned
 }
 
 void cpu_blurGRAY(unsigned char*& input, unsigned char*& output, int width, int height, int grid) {
+
     for (int y = 0; y < height; y++) {
         for (int x = 0; x < width; x++) {
             int blur_sum = 0;
@@ -60,6 +60,7 @@ void cpu_blurGRAY(unsigned char*& input, unsigned char*& output, int width, int 
 } 
     
 void cpu_blurBGR(unsigned char*& input, unsigned char*& output, int width, int height, int grid) {
+
     int channels = 3;
     for (int y = 0; y < height; y++) {
         for (int x = 0; x < width; x++) {
@@ -87,3 +88,19 @@ void cpu_blurBGR(unsigned char*& input, unsigned char*& output, int width, int h
         }  
     }
 } 
+
+void show_image(unsigned char*& input, unsigned char*& output, int width, int height, int channels) {
+
+    int type = CV_MAKETYPE(CV_8U, channels);
+    cv::Mat input_image(height, width, type, input);
+    cv::Mat image_out(height, width, type, output);
+    cv::namedWindow("Input", cv::WINDOW_NORMAL);
+    cv::resizeWindow("Input", 500, 500);
+    cv::imshow("Input", input_image);
+    cv::namedWindow("Blur", cv::WINDOW_NORMAL);
+    cv::resizeWindow("Blur", 500, 500);
+    cv::imshow("Blur", image_out);
+
+}
+
+
