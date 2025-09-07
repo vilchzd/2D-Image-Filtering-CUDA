@@ -5,7 +5,7 @@
 #include "image_process.h"
 
 #define N 32
-#define BLOCK_SIZE 16
+#define BLOCK_SIZE 16 //threads per block 
 
 using namespace std;
 
@@ -34,23 +34,40 @@ using namespace std;
 
 __global__ void gpu_blurGRAY(unsigned char* input, unsigned char* output, int width, int height, int grid) {
 
-    __shared__ float image_mat[BLOCK_SIZE][BLOCK_SIZE];
+    __shared__ unsigned char tile[BLOCK_SIZE + 2 * 20][BLOCK_SIZE + 2 * 20];
 
-    int y = threadIdx.y + BLOCK_SIZE * blockIdx.y;
+    int y = threadIdx.y + BLOCK_SIZE * blockIdx.y; //global pixel positions
     int x = threadIdx.x + BLOCK_SIZE * blockIdx.x;
+
+    int shared_x = threadIdx.x + grid; //maps center pixel
+    int shared_y = threadIdx.y + grid;
+
+    int shared_width = BLOCK_SIZE  + 2 * grid;
 
     if (x < width && y < height) {
         image_mat[threadIdx.y][threadIdx.x] = input[y * width + x];
+    }
+
+        for (int dy = -grid; dy <= grid; dy += BLOCK_SIZE) {
+        for (int dx = -grid; dx <= grid; dx += BLOCK_SIZE) {
+            int gx = x + dx;
+            int gy = y + dy;
+            if (gx >= 0 && gx < width && gy >= 0 && gy < height) {
+                tile[local_y + dy][local_x + dx] = input[gy * width + gx];
+            } else {
+                tile[local_y + dy][local_x + dx] = 0; // zero padding
+            }
+        }
     }
     __syncthreads();
 
     if (x < width && y < height) {
         int blur_sum = 0;
         int count = 0;
-        for (int grid_y = -grid; grid_y < grid; grid_y++) {
-            for (int grid_x = -grid; grid_x < grid; grid_x++) {
-                int blur_y = y + grid_y;
-                int blur_x = x + grid_x;
+        for (int grid_y = -grid; grid_y <= grid; grid_y++) {
+            for (int grid_x = -grid; grid_x <= grid; grid_x++) {
+                int blur_y = shared_y + grid_y;
+                int blur_x = shared_x + grid_x;
                 if (blur_y >= 0 && blur_x >= 0 && blur_y < height && blur_x < width) {
                     blur_sum += image_mat[blur_y * width + blur_x];
                     count++;

@@ -30,11 +30,11 @@ void image_process(const std::string& file_name, unsigned char*& input, unsigned
     width = image.cols;
     height = image.rows;
     int size = image.rows * image.cols * image.channels();
-
     input = new unsigned char[size];
     output = new unsigned char[size];
     std::memcpy(input, image.data, size); 
     std::memcpy(output, input, size); 
+    
 }
 
 void cpu_blurGRAY(unsigned char*& input, unsigned char*& output, int width, int height, int grid) {
@@ -43,8 +43,8 @@ void cpu_blurGRAY(unsigned char*& input, unsigned char*& output, int width, int 
         for (int x = 0; x < width; x++) {
             int blur_sum = 0;
             int count = 0;
-            for (int grid_y = -grid; grid_y < grid; grid_y++) {
-                for (int grid_x = -grid; grid_x < grid; grid_x++) {
+            for (int grid_y = -grid; grid_y <= grid; grid_y++) {
+                for (int grid_x = -grid; grid_x <= grid; grid_x++) {
                     int blur_y = y + grid_y;
                     int blur_x = x + grid_x;
                     if (blur_y >= 0 && blur_x >= 0 && blur_y < height && blur_x < width) {
@@ -66,8 +66,8 @@ void cpu_blurBGR(unsigned char*& input, unsigned char*& output, int width, int h
             int blur_sum_G = 0;
             int blur_sum_R = 0;
             int count = 0;
-            for (int grid_y = -grid; grid_y < grid; grid_y++) {
-                for (int grid_x = -grid; grid_x < grid; grid_x++) {
+            for (int grid_y = -grid; grid_y <= grid; grid_y++) {
+                for (int grid_x = -grid; grid_x <= grid; grid_x++) {
                     int blur_y = y + grid_y;
                     int blur_x = x + grid_x;
                     if (blur_y >= 0 && blur_x >= 0 && blur_y < height && blur_x < width) {
