@@ -45,7 +45,7 @@ __global__ void gpu_blurGRAY(unsigned char* input, unsigned char* output, int wi
     int shared_width = BLOCK_SIZE  + 2 * grid;
 
     if (x < width && y < height) {
-        image_mat[threadIdx.y][threadIdx.x] = input[y * width + x];
+        tile[threadIdx.y][threadIdx.x] = input[y * width + x];
     }
 
         for (int dy = -grid; dy <= grid; dy += BLOCK_SIZE) {
@@ -53,9 +53,9 @@ __global__ void gpu_blurGRAY(unsigned char* input, unsigned char* output, int wi
             int gx = x + dx;
             int gy = y + dy;
             if (gx >= 0 && gx < width && gy >= 0 && gy < height) {
-                tile[local_y + dy][local_x + dx] = input[gy * width + gx];
+                tile[shared_y + dy][shared_x + dx] = input[gy * width + gx];
             } else {
-                tile[local_y + dy][local_x + dx] = 0; // zero padding
+                tile[shared_y + dy][shared_x + dx] = 0; // zero padding
             }
         }
     }
@@ -69,7 +69,7 @@ __global__ void gpu_blurGRAY(unsigned char* input, unsigned char* output, int wi
                 int blur_y = shared_y + grid_y;
                 int blur_x = shared_x + grid_x;
                 if (blur_y >= 0 && blur_x >= 0 && blur_y < height && blur_x < width) {
-                    blur_sum += image_mat[blur_y * width + blur_x];
+                    blur_sum += tile[blur_y * width + blur_x];
                     count++;
                 }
             }
