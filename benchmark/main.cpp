@@ -30,7 +30,7 @@ int main() {
     cout << "Time elapsed: " << duration.count() << " us" << endl;
     (target_channels == 1 ? cpu_blurGRAY : cpu_blurBGR)(input, output, width, height, grid);
 
-    show_image(input, output, width, height, target_channels); 
+    //show_image(input, output, width, height, target_channels); 
  
     cv::waitKey(0);
     
