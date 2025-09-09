@@ -17,7 +17,7 @@ int main() {
 
     image_process(file_name, input, output, width, height, target_channels);
     std::cout << std::fixed << std::setprecision(2) << "Preforming " 
-              << ((width * height * ((2 * grid) * (2 * grid) + 1) * target_channels) / 1'000'000'000.0)
+              << ((1.0 * width * height * ((2 * grid) * (2 * grid) + 1) * target_channels) / 1'000'000'000.0)
               << " billion operations..." << std::endl; 
     (target_channels == 1 ? cpu_blurGRAY : cpu_blurBGR)(input, output, width, height, grid);
     show_image(input, output, width, height, target_channels); 

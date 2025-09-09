@@ -2,9 +2,11 @@
 #include <string>
 #include <iomanip>
 #include <opencv2/opencv.hpp>
+#include <chrono>
 #include "image_process.h"
 
 using namespace std;
+using namespace chrono;
 
 int main() {
 
@@ -17,9 +19,17 @@ int main() {
 
     image_process(file_name, input, output, width, height, target_channels);
     std::cout << std::fixed << std::setprecision(2) << "Preforming " 
-              << ((width * height * ((2 * grid) * (2 * grid) + 1) * target_channels) / 1'000'000'000.0)
+              << ((1.0 * width * height * ((2 * grid) * (2 * grid) + 1) * target_channels) / 1'000'000'000.0)
               << " billion operations..." << std::endl; 
+
+    auto start = high_resolution_clock::now();
     (target_channels == 1 ? cpu_blurGRAY : cpu_blurBGR)(input, output, width, height, grid);
+    auto stop = high_resolution_clock::now();
+    
+    auto duration = duration_cast<microseconds>(stop - start);
+    cout << "Time elapsed: " << duration.count() << " us" << endl;
+    (target_channels == 1 ? cpu_blurGRAY : cpu_blurBGR)(input, output, width, height, grid);
+
     show_image(input, output, width, height, target_channels); 
  
     cv::waitKey(0);
