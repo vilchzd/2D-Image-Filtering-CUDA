@@ -11,7 +11,7 @@ int main() {
     unsigned char* input = nullptr;
     unsigned char* output = nullptr;
     int width, height;
-    int target_channels = 1;
+    int target_channels = 3;
     int grid = MAX_GRID_SIZE;
     string file_name = "C:\\Users\\dievi\\Desktop\\2D-Image-Filtering-CUDA\\love.png";
 

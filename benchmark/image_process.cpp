@@ -1,5 +1,6 @@
 #include <opencv2/opencv.hpp>
 #include <iostream>
+#include <iomanip>
 #include <string>
 #include "image_process.h"
 
@@ -79,7 +80,7 @@ void cpu_blurBGR(unsigned char*& input, unsigned char*& output, int width, int h
                         }
                 }
             }
-            int out_index = (y * width +x) * 3;
+            int out_index = (y * width + x) * 3;
             output[out_index + 0] = blur_sum_B / count;
             output[out_index + 1] = blur_sum_G / count;
             output[out_index + 2] = blur_sum_R / count;
