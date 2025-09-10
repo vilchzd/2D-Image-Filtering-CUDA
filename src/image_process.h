@@ -11,5 +11,6 @@ void show_image(unsigned char*& input, unsigned char*& output, int width, int he
 
 //GPU Funtions
 void gpu_wrapper_blurGRAY(unsigned char*& h_input, unsigned char*& h_output, int width, int height, int grid);
+void gpu_wrapper_blurBGR(unsigned char*& h_input, unsigned char*& h_output, int width, int height, int grid);
 
 #endif 
