@@ -4,15 +4,12 @@
 #include <cuda_runtime.h>
 #include "image_process.h"
 
-
-#define BLOCK_SIZE 32 //threads per block 
-
 using namespace std;
 
 
 __global__ void gpu_blurGRAY(unsigned char* input, unsigned char* output, int width, int height, int grid) {
 
-    __shared__ unsigned char tile[BLOCK_SIZE + 2 * 50][BLOCK_SIZE + 2 * 50];
+    __shared__ unsigned char tile[BLOCK_SIZE + 2 * MAX_GRID_SIZE][BLOCK_SIZE + 2 * MAX_GRID_SIZE];
 
     int y = threadIdx.y + BLOCK_SIZE * blockIdx.y; //global pixel positions
     int x = threadIdx.x + BLOCK_SIZE * blockIdx.x;
@@ -56,17 +53,16 @@ __global__ void gpu_blurGRAY(unsigned char* input, unsigned char* output, int wi
     }  
 }
 
-
 __global__ void gpu_blurBGR(unsigned char* input, unsigned char* output, int width, int height, int grid) {
 
-    __shared__ unsigned char tile[(BLOCK_SIZE + 2 * 48) * (BLOCK_SIZE + 2 * 48) * 3];
+    __shared__ unsigned char tile[(BLOCK_SIZE + 2 * MAX_GRID_SIZE) * (BLOCK_SIZE + 2 * MAX_GRID_SIZE) * 3];
 
     int y = threadIdx.y + BLOCK_SIZE * blockIdx.y; //global pixel positions
     int x = threadIdx.x + BLOCK_SIZE * blockIdx.x;
 
     int shared_x = threadIdx.x + grid; //maps center pixel
     int shared_y = threadIdx.y + grid;
-    int shared_width = BLOCK_SIZE + 2 * 48;
+    int shared_width = BLOCK_SIZE + 2 * MAX_GRID_SIZE;
 
     if (x < width && y < height) {
         int in_index = (y * width + x) * 3;
@@ -122,7 +118,6 @@ __global__ void gpu_blurBGR(unsigned char* input, unsigned char* output, int wid
         output[out_index + 2] = blur_sum_R / count;
     }  
 }
-
 
 /* __global__ void gpu_blurBGR(unsigned char* input, unsigned char* output, int width, int height, int grid) {
     // Shared memory for a tile with halo
@@ -191,7 +186,6 @@ __global__ void gpu_blurBGR(unsigned char* input, unsigned char* output, int wid
 }
  */
 
-
 void gpu_wrapper_blurGRAY(unsigned char*& h_input, unsigned char*& h_output, int width, int height, int grid) {
 
     cout << "Executing gpu_blurGRAY kernel" << endl;
@@ -239,7 +233,6 @@ void gpu_wrapper_blurBGR(unsigned char*& h_input, unsigned char*& h_output, int 
     cudaFree(d_output);
     cout << "Freing memory in gpu" << endl;
 }
-
 
 /* void cpu_blurGRAY(unsigned char*& input, unsigned char*& output, int width, int height, int grid) {
 
