@@ -18,10 +18,14 @@ void image_process(const std::string& file_name, unsigned char*& input, unsigned
     if (channels == 1 && image.channels() != 1) {
         std::cout << "Converted "<< image.channels() << "-channel image to 1-channel GRAY" << std::endl;
         cv::cvtColor(image, image, (image.channels() == 4) ? cv::COLOR_BGRA2GRAY : cv::COLOR_BGR2GRAY);
-    } 
-    else if ((channels == 3 || channels == 4) && image.channels() != 3) {
+        
+    }  else if ((channels == 3 || channels == 4) && image.channels() != 3) {
         std::cout << "Converted "<< image.channels() << "-channel image to 3-channel BGR" << std::endl;
         cv::cvtColor(image, image, (image.channels() == 4) ? cv::COLOR_BGRA2BGR : cv::COLOR_GRAY2BGR);
+        
+    } else if ((channels == 1 && image.channels() == 1) || (channels == 3 && image.channels() == 3)) {
+        std::cout << "Image loadead in "<< image.channels() << "-channels" << std::endl;
+
     } else {
         std::cerr << "Unsupported image format: " << channels << std::endl;
         exit(1);

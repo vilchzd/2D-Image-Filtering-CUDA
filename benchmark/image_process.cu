@@ -9,7 +9,7 @@ using namespace std;
 
 __global__ void gpu_blurGRAY(unsigned char* input, unsigned char* output, int width, int height, int grid) {
 
-    __shared__ unsigned char tile[BLOCK_SIZE + 2 * MAX_GRID_SIZE][BLOCK_SIZE + 2 * MAX_GRID_SIZE];
+    __shared__ unsigned char tile[BLOCK_SIZE + 2 * GRID_SIZE][BLOCK_SIZE + 2 * GRID_SIZE];
 
     int y = threadIdx.y + BLOCK_SIZE * blockIdx.y; //global pixel positions
     int x = threadIdx.x + BLOCK_SIZE * blockIdx.x;
@@ -55,14 +55,14 @@ __global__ void gpu_blurGRAY(unsigned char* input, unsigned char* output, int wi
 
 __global__ void gpu_blurBGR(unsigned char* input, unsigned char* output, int width, int height, int grid) {
 
-    __shared__ unsigned char tile[(BLOCK_SIZE + 2 * MAX_GRID_SIZE) * (BLOCK_SIZE + 2 * MAX_GRID_SIZE) * 3];
+    __shared__ unsigned char tile[(BLOCK_SIZE + 2 * GRID_SIZE) * (BLOCK_SIZE + 2 * GRID_SIZE) * 3];
 
     int y = threadIdx.y + BLOCK_SIZE * blockIdx.y; //global pixel positions
     int x = threadIdx.x + BLOCK_SIZE * blockIdx.x;
 
     int shared_x = threadIdx.x + grid; //maps center pixel
     int shared_y = threadIdx.y + grid;
-    int shared_width = BLOCK_SIZE + 2 * MAX_GRID_SIZE;
+    int shared_width = BLOCK_SIZE + 2 * GRID_SIZE;
 
     if (x < width && y < height) {
         int in_index = (y * width + x) * 3;
