@@ -121,7 +121,7 @@ __global__ void gpu_blurBGR(unsigned char* input, unsigned char* output, int wid
 
 void gpu_wrapper_blurGRAY(unsigned char*& h_input, unsigned char*& h_output, int width, int height, int grid) {
 
-    cout << "Executing gpu_blurGRAY kernel" << endl;
+    //cout << "Executing gpu_blurGRAY kernel" << endl;
     unsigned char *d_input, *d_output;
     int size = width*height*sizeof(unsigned char);
     
@@ -140,12 +140,12 @@ void gpu_wrapper_blurGRAY(unsigned char*& h_input, unsigned char*& h_output, int
 
     cudaFree(d_input);
     cudaFree(d_output);
-    cout << "Freing memory in gpu" << endl;
+    //cout << "Freing memory in gpu" << endl;
 }
 
 void gpu_wrapper_blurBGR(unsigned char*& h_input, unsigned char*& h_output, int width, int height, int grid) {
 
-    cout << "Executing gpu_BGR kernel" << endl;
+    //cout << "Executing gpu_BGR kernel" << endl;
     unsigned char *d_input, *d_output;
     int size = width * height * sizeof(unsigned char) * 3;
     
@@ -164,7 +164,7 @@ void gpu_wrapper_blurBGR(unsigned char*& h_input, unsigned char*& h_output, int 
 
     cudaFree(d_input);
     cudaFree(d_output);
-    cout << "Freing memory in gpu" << endl;
+    //cout << "Freing memory in gpu" << endl;
 }
 
 /* 

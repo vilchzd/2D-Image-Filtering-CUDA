@@ -3,7 +3,7 @@
 
 #include <string>
 
-#define BLOCK_SIZE 16 // Threads per block 
+#define BLOCK_SIZE 32 // Threads per block 
 #define MAX_GRID_SIZE 5 // Grid size
 
 //CPU Funtions
