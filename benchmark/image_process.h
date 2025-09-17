@@ -2,13 +2,14 @@
 #define IMAGE_PROCESS_H
 
 #include <string>
+using namespace std;
 
 #define TARGET_CHANNELS 3 // Desired image output use 1 for GREYSCALE or 3 for BGR 
-#define BLOCK_SIZE 32     // Threads per block 
-#define GRID_SIZE 2       // Grid size (MAX_GRID_SIZE = 48)
+#define BLOCK_SIZE 16     // Threads per block 
+#define GRID_SIZE 1       // Grid size (MAX_GRID_SIZE = 48)
 
 //CPU Funtions
-void image_process(const std::string& file_name, unsigned char*& input, unsigned char*& output, int& width, int& height, int& channels);
+void image_process(const string& file_name, unsigned char*& input, unsigned char*& output, int& width, int& height, int& channels);
 void cpu_blurGRAY(unsigned char*& input, unsigned char*& output, int width, int height, int grid); 
 void cpu_blurBGR(unsigned char*& input, unsigned char*& output, int width, int height, int grid); 
 void show_image(unsigned char*& input, unsigned char*& output, int width, int height, int channels); 

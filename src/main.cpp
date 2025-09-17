@@ -5,6 +5,7 @@
 #include "image_process.h"
 
 using namespace std;
+using namespace cv;
 
 int main() {
 
@@ -14,17 +15,17 @@ int main() {
     int grid = GRID_SIZE;
     int width, height;
     
-    string file_name = "C:\\Users\\dievi\\Desktop\\2D-Image-Filtering-CUDA\\park.png";
+    string file_name = "C:\\Users\\dievi\\Desktop\\2D-Image-Filtering-CUDA\\tiger.png";
 
     image_process(file_name, input, output, width, height, target_channels);
-    std::cout << std::fixed << std::setprecision(2) << "Preforming " 
+    cout << fixed << setprecision(2) << "Preforming " 
               << ((1.0 * width * height * ((2 * grid) * (2 * grid) + 1) * target_channels) / 1'000'000'000.0)
-              << " billion operations using " << (2*grid)+1 << "x" << (2*grid)+1 << " blur kernel" << std::endl; 
+              << " billion operations using " << (2*grid)+1 << "x" << (2*grid)+1 << " blur kernel" << endl; 
     //(target_channels == 1 ? cpu_blurGRAY : cpu_blurBGR)(input, output, width, height, grid);
     (target_channels == 1 ?  gpu_wrapper_blurGRAY :  gpu_wrapper_blurBGR)(input, output, width, height, grid);
+
     show_image(input, output, width, height, target_channels); 
- 
-    cv::waitKey(0);
+    waitKey(0);
     
     delete[] input;
     delete[] output;

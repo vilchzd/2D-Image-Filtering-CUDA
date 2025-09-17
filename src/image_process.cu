@@ -6,15 +6,14 @@
 
 using namespace std;
 
-
 __global__ void gpu_blurGRAY(unsigned char* input, unsigned char* output, int width, int height, int grid) {
 
     __shared__ unsigned char tile[BLOCK_SIZE + 2 * GRID_SIZE][BLOCK_SIZE + 2 * GRID_SIZE];
 
-    int y = threadIdx.y + BLOCK_SIZE * blockIdx.y; //global pixel positions
+    int y = threadIdx.y + BLOCK_SIZE * blockIdx.y; // Global pixel positions
     int x = threadIdx.x + BLOCK_SIZE * blockIdx.x;
     
-    int shared_x = threadIdx.x + grid; //maps center pixel
+    int shared_x = threadIdx.x + grid; // Maps center pixel
     int shared_y = threadIdx.y + grid;
     int shared_width = BLOCK_SIZE + 2 * 50;
 
@@ -29,7 +28,7 @@ __global__ void gpu_blurGRAY(unsigned char* input, unsigned char* output, int wi
             if (gx >= 0 && gx < width && gy >= 0 && gy < height) {
                 tile[shared_y + dy][shared_x + dx] = input[gy * width + gx];
             } else {
-                tile[shared_y + dy][shared_x + dx] = 0; // zero padding
+                tile[shared_y + dy][shared_x + dx] = 0; // Zero padding
             }
         }
     }
@@ -167,53 +166,3 @@ void gpu_wrapper_blurBGR(unsigned char*& h_input, unsigned char*& h_output, int 
     cout << "Freing memory in gpu" << endl;
 }
 
-/* 
-    int width = N;
-    float *d_in, *d_out;
-    float *h_in = (float*)malloc(width*width*sizeof(float));
-    float *h_out = (float*)malloc(width*width*sizeof(float));
-
-    for (int i = 0; i < width*width; i++) {
-        h_in[i] = i+1;
-    }
-
-    cudaMalloc((void**)&d_in, width*width*sizeof(float));
-    cudaMemcpy(d_in, h_in, width*width*sizeof(float), cudaMemcpyHostToDevice);
-    cudaMalloc((void**)&d_out, width*width*sizeof(float));
-
-
-    dim3 block_size(BLOCK_SIZE, BLOCK_SIZE);
-    dim3 grid_size((N + BLOCK_SIZE - 1)/BLOCK_SIZE, (N + BLOCK_SIZE - 1)/BLOCK_SIZE);
-
-        
-    cudaEvent_t gpu_start, gpu_stop;
-    cudaEventCreate(&gpu_start);
-    cudaEventCreate(&gpu_stop);
-    cudaEventRecord(gpu_start);
-
-    transpose<<<grid_size, block_size>>>(d_in, d_out, N);
-    cudaDeviceSynchronize();
-
-
-    cudaEventRecord(gpu_stop);
-    cudaEventSynchronize(gpu_stop);
-
-    cudaMemcpy(h_out, d_out, width*width*sizeof(float), cudaMemcpyDeviceToHost);
-
-    for(int i=0;i<width;i++){
-        for(int j=0;j<width;j++)
-            cout << h_out[i*width+j] << " ";
-        cout << endl;
-    }
-
-
-    float milliseconds = 0;
-    cudaEventElapsedTime(&milliseconds, gpu_start, gpu_stop);
-    cout << "GPU time: " << milliseconds << " ms" << endl;
-
-
-    free(h_in);
-    free(h_out);
-    cudaFree(d_in);
-    cudaFree(d_out);
- */

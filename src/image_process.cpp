@@ -5,29 +5,30 @@
 #include "image_process.h"
 
 using namespace cv;
+using namespace std;
 
-void image_process(const std::string& file_name, unsigned char*& input, unsigned char*& output, int& width, int& height, int& channels) {
+void image_process(const string& file_name, unsigned char*& input, unsigned char*& output, int& width, int& height, int& channels) {
     
-    cv::Mat image = cv::imread(file_name, cv::IMREAD_UNCHANGED);
+    Mat image = imread(file_name, IMREAD_UNCHANGED);
     if (image.empty()) {
-        std::cerr << "Failed to load image!" << std::endl;
+        cerr << "Failed to load image!" << endl;
         exit(1);
     }
 
-    std::cout << "Image size: " << image.cols << "x" << image.rows << ", Channels: " << image.channels() << std::endl;
+    cout << "Image size: " << image.cols << "x" << image.rows << ", Channels: " << image.channels() << endl;
     if (channels == 1 && image.channels() != 1) {
-        std::cout << "Converted "<< image.channels() << "-channel image to 1-channel GRAY" << std::endl;
-        cv::cvtColor(image, image, (image.channels() == 4) ? cv::COLOR_BGRA2GRAY : cv::COLOR_BGR2GRAY);
+        cout << "Converted "<< image.channels() << "-channel image to 1-channel GRAY" << endl;
+        cvtColor(image, image, (image.channels() == 4) ? COLOR_BGRA2GRAY : COLOR_BGR2GRAY);
         
     }  else if ((channels == 3 || channels == 4) && image.channels() != 3) {
-        std::cout << "Converted "<< image.channels() << "-channel image to 3-channel BGR" << std::endl;
-        cv::cvtColor(image, image, (image.channels() == 4) ? cv::COLOR_BGRA2BGR : cv::COLOR_GRAY2BGR);
+        cout << "Converted "<< image.channels() << "-channel image to 3-channel BGR" << endl;
+        cvtColor(image, image, (image.channels() == 4) ? COLOR_BGRA2BGR : COLOR_GRAY2BGR);
         
     } else if ((channels == 1 && image.channels() == 1) || (channels == 3 && image.channels() == 3)) {
-        std::cout << "Image loadead in "<< image.channels() << "-channels" << std::endl;
+        cout << "Image loadead in "<< image.channels() << "-channels" << endl;
 
     } else {
-        std::cerr << "Unsupported image format: " << channels << std::endl;
+        cerr << "Unsupported image format: " << channels << endl;
         exit(1);
     }
  
@@ -37,8 +38,8 @@ void image_process(const std::string& file_name, unsigned char*& input, unsigned
     int size = image.rows * image.cols * image.channels();
     input = new unsigned char[size];
     output = new unsigned char[size];
-    std::memcpy(input, image.data, size); 
-    std::memcpy(output, input, size); 
+    memcpy(input, image.data, size); 
+    memcpy(output, input, size); 
     
 }
 
