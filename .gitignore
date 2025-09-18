@@ -42,7 +42,7 @@
 
 #image files
 *cmake
-*.png
+#*.png
 
 #vscode
 .vscode

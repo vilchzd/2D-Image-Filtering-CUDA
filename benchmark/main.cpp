@@ -20,7 +20,7 @@ int main() {
     int grid = GRID_SIZE;
     int width, height;
     
-    string file_name = "C:\\Users\\dievi\\Desktop\\2D-Image-Filtering-CUDA\\tiger.png";
+    string file_name = "C:\\Users\\dievi\\Desktop\\2D-Image-Filtering-CUDA\\media\\tiger.png";
 
     image_process(file_name, input, output, width, height, target_channels);
     cout << fixed << setprecision(2) << "Preforming " 
@@ -42,9 +42,6 @@ int main() {
         float ms_cpu = chrono::duration<float, milli>(stop_cpu - start_cpu).count();
         cpu_speed.push_back(ms_cpu);
         
-        //cout << "Time elapsed on cpu execution: " << duration_1.count() << " ms" << endl;
-        //cout << k << endl;
-        
         auto start_gpu = high_resolution_clock::now();
         (target_channels == 1 ?  gpu_wrapper_blurGRAY :  gpu_wrapper_blurBGR)(input, output, width, height, grid);
         auto stop_gpu = high_resolution_clock::now();
@@ -52,11 +49,6 @@ int main() {
         float ms_gpu = chrono::duration<float, milli>(stop_gpu - start_gpu).count();
         gpu_speed.push_back(ms_gpu);
 
-        //auto duration = duration_cast<milliseconds>(stop - start);
-        //k += duration.count();
-        //cout << "Time elapsed on gpu execution: " << duration.count() << " ms" << endl;
-        //cout << j << endl;
-        //cout << "GPU speedup is x" << duration_1.count() / duration.count() << " times faster than CPU"<< endl;
     }
 
     //---------------------End to end GPU preformance------------------------------//
