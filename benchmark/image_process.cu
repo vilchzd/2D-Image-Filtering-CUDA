@@ -16,7 +16,7 @@ __global__ void gpu_blurGRAY(unsigned char* input, unsigned char* output, int wi
     
     int shared_x = threadIdx.x + grid; //maps center pixel
     int shared_y = threadIdx.y + grid;
-    int shared_width = BLOCK_SIZE + 2 * 50;
+    int shared_width = BLOCK_SIZE + 2 * GRID_SIZE;
 
     if (x < width && y < height) {
         tile[shared_y][shared_x] = input[y * width + x];

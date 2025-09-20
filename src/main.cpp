@@ -15,7 +15,7 @@ int main() {
     int grid = GRID_SIZE;
     int width, height;
     
-    string file_name = "C:\\Users\\dievi\\Desktop\\2D-Image-Filtering-CUDA\\image\\tiger.png";
+    string file_name = "C:\\Users\\dievi\\Desktop\\2D-Image-Filtering-CUDA\\media\\tiger.png";
 
     image_process(file_name, input, output, width, height, target_channels);
     cout << fixed << setprecision(2) << "Preforming " 

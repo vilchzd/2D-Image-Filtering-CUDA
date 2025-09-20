@@ -31,7 +31,7 @@ int main() {
     (target_channels == 1 ?  gpu_wrapper_blurGRAY :  gpu_wrapper_blurBGR)(input, output, width, height, grid);
 
     vector<float> cpu_speed, gpu_speed;
-    int runs = 30;
+    int runs = 2;
 
     for (int i = 0; i < runs; i++) {  
 
@@ -69,7 +69,8 @@ int main() {
     float std_gpu = compute_stddev(gpu_speed, avg_gpu);
     
 
-    cout << std::setprecision(3) << "\n" << string(15,'=') << " Benchmark results for " << runs << " runs with block size " << BLOCK_SIZE << " " << string(15,'=') << endl;
+    cout << std::setprecision(3) << "\n" << string(15,'=') << " Benchmark results for " << runs << " runs with block size " 
+         << BLOCK_SIZE << " and grid size " << (2*grid)+1 << "x" << (2*grid)+1 << " " << string(15,'=') << endl;
     cout << "Average CPU: (" << total_cpu / runs << " +/- " << std_cpu << ") ms" << endl;
     cout << "Average GPU: (" << total_gpu / runs << " +/- " << std_gpu << ") ms" << endl;
     cout << "GPU speedup: x" << avg_cpu / avg_gpu << endl;
