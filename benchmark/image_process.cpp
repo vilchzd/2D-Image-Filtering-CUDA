@@ -2,6 +2,7 @@
 #include <iostream>
 #include <iomanip>
 #include <string>
+#include <vector>
 #include "image_process.h"
 
 using namespace cv;
@@ -107,4 +108,12 @@ void show_image(unsigned char*& input, unsigned char*& output, int width, int he
 
 }
 
+float stddev(const vector<float>& times, float mean) {
 
+    float sum = 0;
+    for (float t : times) {
+        sum += (t - mean) * (t - mean);
+    }
+    return sqrt(sum / times.size());
+
+}

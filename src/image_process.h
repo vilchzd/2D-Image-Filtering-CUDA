@@ -4,9 +4,8 @@
 #include <string>
 using namespace std;
 
-
 #define TARGET_CHANNELS 1 // Desired image output use 1 for GREYSCALE or 3 for BGR  
-#define BLOCK_SIZE 32     // Threads per block 
+#define BLOCK_SIZE 32     // Threads per block (MAX 32 for 2D block)
 #define GRID_SIZE 26      // Grid size (MAX_GRID_SIZE = 48)
 
 //CPU Funtions
