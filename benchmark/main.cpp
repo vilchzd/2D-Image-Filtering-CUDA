@@ -20,13 +20,15 @@ int main() {
     int grid = GRID_SIZE;
     int width, height;
     
-    string file_name = "C:\\Users\\dievi\\Desktop\\2D-Image-Filtering-CUDA\\media\\tiger.png";
+    string file_name = "C:\\Users\\dievi\\Desktop\\2D-Image-Filtering-CUDA\\media\\test.png";
 
     image_process(file_name, input, output, width, height, target_channels);
     cout << fixed << setprecision(2) << "Preforming " 
               << ((1.0 * width * height * ((2 * grid) * (2 * grid) + 1) * target_channels) / 1'000'000'000.0)
               << " billion operations using a " << (2*grid)+1 << "x" << (2*grid)+1 << " blur kernel" << endl; 
 
+
+              
     cout << std::setprecision(3) << "Computing benchmark results for block size " 
          << BLOCK_SIZE << " and a " << (2*grid)+1 << "x" << (2*grid)+1 << " grid size" << endl;
 
@@ -34,10 +36,11 @@ int main() {
     (target_channels == 1 ?  gpu_wrapper_blurGRAY :  gpu_wrapper_blurBGR)(input, output, width, height, grid);
 
     vector<float> cpu_speed, gpu_speed;
-    int runs = 2;
+    
+    int runs = 1;
 
     for (int i = 0; i < runs; i++) {  
-
+ 
         auto start_cpu = high_resolution_clock::now();
         (target_channels == 1 ? cpu_blurGRAY : cpu_blurBGR)(input, output, width, height, grid);
         auto stop_cpu = high_resolution_clock::now();

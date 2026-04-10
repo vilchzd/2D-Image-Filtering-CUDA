@@ -12,7 +12,7 @@ int main() {
     unsigned char* input = nullptr;
     unsigned char* output = nullptr;
     int target_channels = TARGET_CHANNELS;
-    int grid = GRID_SIZE;
+    int grid = GRID_SIZE; 
     int width, height;
     
     string file_name = "C:\\Users\\dievi\\Desktop\\2D-Image-Filtering-CUDA\\media\\tiger.png";

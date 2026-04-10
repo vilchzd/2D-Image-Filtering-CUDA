@@ -7,7 +7,7 @@ using namespace std;
 
 #define TARGET_CHANNELS 3 // Desired image output use 1 for GREYSCALE or 3 for BGR 
 #define BLOCK_SIZE 32     // Threads per block (MAX 32 for 2D block)
-#define GRID_SIZE  1      // Grid size (MAX_GRID_SIZE = 48)
+#define GRID_SIZE  3      // Grid size (MAX_GRID_SIZE = 48)
 
 //CPU Funtions
 void image_process(const string& file_name, unsigned char*& input, unsigned char*& output, int& width, int& height, int& channels);

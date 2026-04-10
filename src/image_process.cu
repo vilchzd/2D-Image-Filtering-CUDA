@@ -1,6 +1,7 @@
 #include <iostream>   
 #include <cstdlib>   
 #include <iomanip>
+#include <vector>
 #include <cuda_runtime.h>
 #include "image_process.h"
 
@@ -10,25 +11,30 @@ __global__ void gpu_blurGRAY(unsigned char* input, unsigned char* output, int wi
 
     __shared__ unsigned char tile[BLOCK_SIZE + 2 * GRID_SIZE][BLOCK_SIZE + 2 * GRID_SIZE];
 
-    int y = threadIdx.y + BLOCK_SIZE * blockIdx.y; // Global pixel positions
-    int x = threadIdx.x + BLOCK_SIZE * blockIdx.x;
+    int x = threadIdx.x + BLOCK_SIZE * blockIdx.x; // Global pixel positions
+    int y = threadIdx.y + BLOCK_SIZE * blockIdx.y; 
     
     int shared_x = threadIdx.x + grid; // Maps center pixel
     int shared_y = threadIdx.y + grid;
-    int shared_width = BLOCK_SIZE + 2 * GRID_SIZE;
+    int shared_width = BLOCK_SIZE + 2 * GRID_SIZE; //tile width
 
-    if (x < width && y < height) {
-        tile[shared_y][shared_x] = input[y * width + x];
-    }
+    int block_x = threadIdx.x;
+    int block_y = threadIdx.y;
 
-    for (int dy = -grid; dy <= grid; dy++) {
-        for (int dx = -grid; dx <= grid; dx++)  {
-            int gy = y + dy;
-            int gx = x + dx;
+    for (int tile_y = block_y; tile_y < shared_width; tile_y += BLOCK_SIZE) {
+        for (int tile_x = block_x; tile_x < shared_width; tile_x += BLOCK_SIZE) {
+
+            int gx = blockIdx.x * BLOCK_SIZE + tile_x - grid;
+            int gy = blockIdx.y * BLOCK_SIZE + tile_y - grid;
+
             if (gx >= 0 && gx < width && gy >= 0 && gy < height) {
-                tile[shared_y + dy][shared_x + dx] = input[gy * width + gx];
+
+                tile[tile_y][tile_x] = input[gy * width + gx];
+
             } else {
-                tile[shared_y + dy][shared_x + dx] = 0; // Zero padding
+
+                tile[tile_y][tile_x] = 0;
+
             }
         }
     }
@@ -36,22 +42,28 @@ __global__ void gpu_blurGRAY(unsigned char* input, unsigned char* output, int wi
     __syncthreads();
 
     if (x < width && y < height) {
+
         int blur_sum = 0;
         int count = 0;
+
         for (int grid_y = -grid; grid_y <= grid; grid_y++) {
             for (int grid_x = -grid; grid_x <= grid; grid_x++) {
+
                 int blur_y = shared_y + grid_y;
                 int blur_x = shared_x + grid_x;
-                if (blur_y >= 0 && blur_x >= 0 && blur_y < shared_width && blur_x < shared_width) {
-                    blur_sum += tile[blur_y][blur_x];
-                    count++;
-                }
+
+                blur_sum += tile[blur_y][blur_x];
+                count++;
+
             }
         }
+
         output[y * width + x] = blur_sum / count;
+
     }  
 }
 
+/*
 __global__ void gpu_blurBGR(unsigned char* input, unsigned char* output, int width, int height, int grid) {
 
     __shared__ unsigned char tile[(BLOCK_SIZE + 2 * GRID_SIZE) * (BLOCK_SIZE + 2 * GRID_SIZE) * 3];
@@ -59,7 +71,7 @@ __global__ void gpu_blurBGR(unsigned char* input, unsigned char* output, int wid
     int y = threadIdx.y + BLOCK_SIZE * blockIdx.y; //global pixel positions
     int x = threadIdx.x + BLOCK_SIZE * blockIdx.x;
 
-    int shared_x = threadIdx.x + grid; //maps center pixel
+    int shared_x = threadIdx.x + grid; //map center pixel
     int shared_y = threadIdx.y + grid;
     int shared_width = BLOCK_SIZE + 2 * GRID_SIZE;
 
@@ -117,10 +129,82 @@ __global__ void gpu_blurBGR(unsigned char* input, unsigned char* output, int wid
         output[out_index + 2] = blur_sum_R / count;
     }  
 }
+*/
+//fixed
+__global__ void gpu_blurBGR(unsigned char* input, unsigned char* output, int width, int height, int grid) {
+
+    __shared__ unsigned char tile[(BLOCK_SIZE + 2 * GRID_SIZE) * (BLOCK_SIZE + 2 * GRID_SIZE) * 3];
+
+    int x = threadIdx.x + BLOCK_SIZE * blockIdx.x; //global pixel positions
+    int y = threadIdx.y + BLOCK_SIZE * blockIdx.y; 
+    
+    int shared_x = threadIdx.x + grid; // Maps center pixel
+    int shared_y = threadIdx.y + grid;
+    int shared_width = BLOCK_SIZE + 2 * GRID_SIZE; //tile width
+
+    int block_x = threadIdx.x;
+    int block_y = threadIdx.y;
+
+    for (int tile_y = block_y; tile_y < shared_width; tile_y += BLOCK_SIZE) {
+        for (int tile_x = block_x; tile_x < shared_width; tile_x += BLOCK_SIZE) {
+
+            int gx = blockIdx.x * BLOCK_SIZE + tile_x - grid;
+            int gy = blockIdx.y * BLOCK_SIZE + tile_y - grid;
+
+            int sh_index = (tile_y * shared_width + tile_x) * 3;
+
+            if (gx >= 0 && gx < width && gy >= 0 && gy < height) {
+                
+                int in_index = (gy * width + gx) * 3;
+                tile[sh_index + 0] = input[in_index + 0];
+                tile[sh_index + 1] = input[in_index + 1];
+                tile[sh_index + 2] = input[in_index + 2];
+
+            } else {
+
+                tile[sh_index + 0] = 0;
+                tile[sh_index + 1] = 0;
+                tile[sh_index + 2] = 0;
+
+            }
+        }
+    }
+
+    __syncthreads();
+
+    if (x < width && y < height) {
+
+        int blur_sum_B = 0;
+        int blur_sum_G = 0;
+        int blur_sum_R = 0;
+        int count = 0;
+
+        for (int grid_y = -grid; grid_y <= grid; grid_y++) {
+            for (int grid_x = -grid; grid_x <= grid; grid_x++) {
+
+                int blur_y = shared_y + grid_y;
+                int blur_x = shared_x + grid_x;
+
+                int sh_index = (blur_y * shared_width + blur_x) * 3;
+
+                blur_sum_B += tile[sh_index + 0];
+                blur_sum_G += tile[sh_index + 1];
+                blur_sum_R += tile[sh_index + 2];
+                count++;
+
+            }
+        }
+
+        int out_index = (y * width + x) * 3;
+        output[out_index + 0] = blur_sum_B / count;
+        output[out_index + 1] = blur_sum_G / count;
+        output[out_index + 2] = blur_sum_R / count;
+
+    }
+}
 
 void gpu_wrapper_blurGRAY(unsigned char*& h_input, unsigned char*& h_output, int width, int height, int grid) {
 
-    cout << "Executing gpu_blurGRAY kernel" << endl;
     unsigned char *d_input, *d_output;
     int size = width*height*sizeof(unsigned char);
     
@@ -139,12 +223,11 @@ void gpu_wrapper_blurGRAY(unsigned char*& h_input, unsigned char*& h_output, int
 
     cudaFree(d_input);
     cudaFree(d_output);
-    cout << "Freing memory in gpu" << endl;
+
 }
 
 void gpu_wrapper_blurBGR(unsigned char*& h_input, unsigned char*& h_output, int width, int height, int grid) {
 
-    cout << "Executing gpu_BGR kernel" << endl;
     unsigned char *d_input, *d_output;
     int size = width * height * sizeof(unsigned char) * 3;
     
@@ -163,6 +246,6 @@ void gpu_wrapper_blurBGR(unsigned char*& h_input, unsigned char*& h_output, int 
 
     cudaFree(d_input);
     cudaFree(d_output);
-    cout << "Freing memory in gpu" << endl;
+
 }
 
