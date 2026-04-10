@@ -20,24 +20,23 @@ int main() {
     int grid = GRID_SIZE;
     int width, height;
     
-    string file_name = "C:\\Users\\dievi\\Desktop\\2D-Image-Filtering-CUDA\\media\\test.png";
+    string file_name = "media\\tiger.png";
 
     image_process(file_name, input, output, width, height, target_channels);
     cout << fixed << setprecision(2) << "Preforming " 
-              << ((1.0 * width * height * ((2 * grid) * (2 * grid) + 1) * target_channels) / 1'000'000'000.0)
+              << ((1.0 * width * height * ((2 * grid) + 1) * ((2 * grid) + 1) * target_channels) / 1'000'000'000.0)
               << " billion operations using a " << (2*grid)+1 << "x" << (2*grid)+1 << " blur kernel" << endl; 
-
-
-              
+        
     cout << std::setprecision(3) << "Computing benchmark results for block size " 
          << BLOCK_SIZE << " and a " << (2*grid)+1 << "x" << (2*grid)+1 << " grid size" << endl;
 
-    //----------------------------------------GPU WARMUP-------------------------------------------------//
-    (target_channels == 1 ?  gpu_wrapper_blurGRAY :  gpu_wrapper_blurBGR)(input, output, width, height, grid);
+   
 
     vector<float> cpu_speed, gpu_speed;
-    
-    int runs = 1;
+    int runs = 10;
+
+    //----------------------------------------CPU WARMUP-------------------------------------------------//
+    (target_channels == 1 ? cpu_blurGRAY : cpu_blurBGR)(input, output, width, height, grid);
 
     for (int i = 0; i < runs; i++) {  
  
@@ -47,7 +46,15 @@ int main() {
         
         float ms_cpu = chrono::duration<float, milli>(stop_cpu - start_cpu).count();
         cpu_speed.push_back(ms_cpu);
-        
+
+    }
+
+    //----------------------------------------GPU WARMUP-------------------------------------------------//
+    (target_channels == 1 ?  gpu_wrapper_blurGRAY :  gpu_wrapper_blurBGR)(input, output, width, height, grid);
+
+    //--------------------------------End to end GPU preformance-----------------------------------------//
+    for (int i = 0; i < runs; i++) {  
+ 
         auto start_gpu = high_resolution_clock::now();
         (target_channels == 1 ?  gpu_wrapper_blurGRAY :  gpu_wrapper_blurBGR)(input, output, width, height, grid);
         auto stop_gpu = high_resolution_clock::now();
@@ -56,8 +63,6 @@ int main() {
         gpu_speed.push_back(ms_gpu);
 
     }
-
-    //---------------------End to end GPU preformance------------------------------//
 
     // Compute totals and averages
     float total_cpu = accumulate(cpu_speed.begin(), cpu_speed.end(), 0.0f);

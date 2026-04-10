@@ -15,11 +15,11 @@ int main() {
     int grid = GRID_SIZE; 
     int width, height;
     
-    string file_name = "C:\\Users\\dievi\\Desktop\\2D-Image-Filtering-CUDA\\media\\tiger.png";
+    string file_name = "media\\tiger.png";
 
     image_process(file_name, input, output, width, height, target_channels);
     cout << fixed << setprecision(2) << "Preforming " 
-              << ((1.0 * width * height * ((2 * grid) * (2 * grid) + 1) * target_channels) / 1'000'000'000.0)
+              << ((1.0 * width * height * ((2 * grid) + 1) * ((2 * grid) + 1) * target_channels) / 1'000'000'000.0)
               << " billion operations using " << (2*grid)+1 << "x" << (2*grid)+1 << " blur kernel" << endl; 
     //(target_channels == 1 ? cpu_blurGRAY : cpu_blurBGR)(input, output, width, height, grid);
     (target_channels == 1 ?  gpu_wrapper_blurGRAY :  gpu_wrapper_blurBGR)(input, output, width, height, grid);

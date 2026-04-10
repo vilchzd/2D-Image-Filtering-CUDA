@@ -55,8 +55,8 @@ void cpu_blurGRAY(unsigned char*& input, unsigned char*& output, int width, int 
                     int blur_x = x + grid_x;
                     if (blur_y >= 0 && blur_x >= 0 && blur_y < height && blur_x < width) {
                         blur_sum += input[blur_y * width + blur_x];
-                        count++;
-                        }
+                    }
+                    count++;
                 }
             }
             output[y * width + x] = blur_sum / count;
@@ -81,8 +81,8 @@ void cpu_blurBGR(unsigned char*& input, unsigned char*& output, int width, int h
                         blur_sum_B += input[in_index + 0];
                         blur_sum_G += input[in_index + 1];
                         blur_sum_R += input[in_index + 2];
-                        count++;
-                        }
+                    }
+                    count++;
                 }
             }
             int out_index = (y * width + x) * 3;
@@ -91,7 +91,7 @@ void cpu_blurBGR(unsigned char*& input, unsigned char*& output, int width, int h
             output[out_index + 2] = blur_sum_R / count;
         }  
     }
-} 
+}
 
 void show_image(unsigned char*& input, unsigned char*& output, int width, int height, int channels) {
 

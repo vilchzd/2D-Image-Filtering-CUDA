@@ -7,120 +7,6 @@
 
 using namespace std;
 
-/*__global__ void gpu_blurGRAY(unsigned char* input, unsigned char* output, int width, int height, int grid) {
-
-    __shared__ unsigned char tile[BLOCK_SIZE + 2 * GRID_SIZE][BLOCK_SIZE + 2 * GRID_SIZE];
-
-    int y = threadIdx.y + BLOCK_SIZE * blockIdx.y; //global pixel positions
-    int x = threadIdx.x + BLOCK_SIZE * blockIdx.x;
-    
-    int shared_x = threadIdx.x + grid; //maps center pixel
-    int shared_y = threadIdx.y + grid;
-    int shared_width = BLOCK_SIZE + 2 * GRID_SIZE;
-
-    if (x < width && y < height) {
-        tile[shared_y][shared_x] = input[y * width + x];
-    }
-
-    for (int dy = -grid; dy <= grid; dy++) {
-        for (int dx = -grid; dx <= grid; dx++)  {
-            int gy = y + dy;
-            int gx = x + dx;
-            if (gx >= 0 && gx < width && gy >= 0 && gy < height) {
-                tile[shared_y + dy][shared_x + dx] = input[gy * width + gx];
-            } else {
-                tile[shared_y + dy][shared_x + dx] = 0; // zero padding
-            }
-        }
-    }
-
-    __syncthreads();
-
-    if (x < width && y < height) {
-        int blur_sum = 0;
-        int count = 0;
-        for (int grid_y = -grid; grid_y <= grid; grid_y++) {
-            for (int grid_x = -grid; grid_x <= grid; grid_x++) {
-                int blur_y = shared_y + grid_y;
-                int blur_x = shared_x + grid_x;
-                if (blur_y >= 0 && blur_x >= 0 && blur_y < shared_width && blur_x < shared_width) {
-                    blur_sum += tile[blur_y][blur_x];
-                    count++;
-                }
-            }
-        }
-        output[y * width + x] = blur_sum / count;
-    }  
-}
-*/
-/*
-__global__ void gpu_blurBGR(unsigned char* input, unsigned char* output, int width, int height, int grid) {
-
-    __shared__ unsigned char tile[(BLOCK_SIZE + 2 * GRID_SIZE) * (BLOCK_SIZE + 2 * GRID_SIZE) * 3];
-
-    int y = threadIdx.y + BLOCK_SIZE * blockIdx.y; // Global pixel positions
-    int x = threadIdx.x + BLOCK_SIZE * blockIdx.x;
-
-    int shared_x = threadIdx.x + grid; // Maps center pixel
-    int shared_y = threadIdx.y + grid;
-    int shared_width = BLOCK_SIZE + 2 * GRID_SIZE;
-
-    if (x < width && y < height) {
-        int in_index = (y * width + x) * 3;
-        int sh_index = (shared_y * shared_width + shared_x) * 3;
-        tile[sh_index + 0] = input[in_index + 0]; // B
-        tile[sh_index + 1] = input[in_index + 1]; // G
-        tile[sh_index + 2] = input[in_index + 2]; // R
-    }
-
-    for (int dy = -grid; dy <= grid; dy++) {
-        for (int dx = -grid; dx <= grid; dx++)  {
-            int gy = y + dy;
-            int gx = x + dx;
-            int sh_index = ((shared_y + dy) * shared_width + (shared_x + dx)) * 3;
-
-            if (gx >= 0 && gx < width && gy >= 0 && gy < height) {
-                int in_index = (gy * width + gx) * 3;
-                tile[sh_index + 0] = input[in_index + 0];
-                tile[sh_index + 1] = input[in_index + 1];
-                tile[sh_index + 2] = input[in_index + 2];
-            } else {
-                tile[sh_index + 0] = 0; // Zero padding
-                tile[sh_index + 1] = 0;
-                tile[sh_index + 2] = 0; 
-            }
-        }
-    }
-
-    __syncthreads();
-
-    if (x < width && y < height) {
-        int blur_sum_B = 0;
-        int blur_sum_G = 0;
-        int blur_sum_R = 0;
-        int count = 0;
-
-        for (int grid_y = -grid; grid_y <= grid; grid_y++) {
-            for (int grid_x = -grid; grid_x <= grid; grid_x++) {
-                int blur_y = shared_y + grid_y;
-                int blur_x = shared_x + grid_x;
-                if (blur_y >= 0 && blur_x >= 0 && blur_y < shared_width && blur_x < shared_width) {
-                    int sh_index = (blur_y * shared_width + blur_x) * 3;
-                    blur_sum_B += tile[sh_index + 0];
-                    blur_sum_G += tile[sh_index + 1];
-                    blur_sum_R += tile[sh_index + 2];
-                    count++;
-                }
-            }
-        }
-        int out_index = (y * width + x) * 3;
-        output[out_index + 0] = blur_sum_B / count;
-        output[out_index + 1] = blur_sum_G / count;
-        output[out_index + 2] = blur_sum_R / count;
-    }  
-}
-*/
-
 __global__ void gpu_blurGRAY(unsigned char* input, unsigned char* output, int width, int height, int grid) {
 
     __shared__ unsigned char tile[BLOCK_SIZE + 2 * GRID_SIZE][BLOCK_SIZE + 2 * GRID_SIZE];
@@ -128,9 +14,9 @@ __global__ void gpu_blurGRAY(unsigned char* input, unsigned char* output, int wi
     int x = threadIdx.x + BLOCK_SIZE * blockIdx.x; // Global pixel positions
     int y = threadIdx.y + BLOCK_SIZE * blockIdx.y; 
     
-    int shared_x = threadIdx.x + grid; // Maps center pixel
+    int shared_x = threadIdx.x + grid;             // Maps center pixel
     int shared_y = threadIdx.y + grid;
-    int shared_width = BLOCK_SIZE + 2 * GRID_SIZE; //tile width
+    int shared_width = BLOCK_SIZE + 2 * GRID_SIZE; // Tile width
 
     int block_x = threadIdx.x;
     int block_y = threadIdx.y;
@@ -181,12 +67,12 @@ __global__ void gpu_blurBGR(unsigned char* input, unsigned char* output, int wid
 
     __shared__ unsigned char tile[(BLOCK_SIZE + 2 * GRID_SIZE) * (BLOCK_SIZE + 2 * GRID_SIZE) * 3];
 
-    int x = threadIdx.x + BLOCK_SIZE * blockIdx.x; //global pixel positions
+    int x = threadIdx.x + BLOCK_SIZE * blockIdx.x; // Global pixel positions
     int y = threadIdx.y + BLOCK_SIZE * blockIdx.y; 
     
-    int shared_x = threadIdx.x + grid; // Maps center pixel
+    int shared_x = threadIdx.x + grid;             // Maps center pixel
     int shared_y = threadIdx.y + grid;
-    int shared_width = BLOCK_SIZE + 2 * GRID_SIZE; //tile width
+    int shared_width = BLOCK_SIZE + 2 * GRID_SIZE; // Tile width
 
     int block_x = threadIdx.x;
     int block_y = threadIdx.y;

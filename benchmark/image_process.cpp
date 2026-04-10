@@ -56,8 +56,7 @@ void cpu_blurGRAY(unsigned char*& input, unsigned char*& output, int width, int 
                     int blur_x = x + grid_x;
                     if (blur_y >= 0 && blur_x >= 0 && blur_y < height && blur_x < width) {
                         blur_sum += input[blur_y * width + blur_x];
-                        
-                     }
+                    }
                     count++;
                 }
             }
