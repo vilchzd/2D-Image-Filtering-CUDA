@@ -21,7 +21,7 @@ void image_process(const string& file_name, unsigned char*& input, unsigned char
         cout << "Converted "<< image.channels() << "-channel image to 1-channel GRAY" << endl;
         cvtColor(image, image, (image.channels() == 4) ? COLOR_BGRA2GRAY : COLOR_BGR2GRAY);
         
-    }  else if ((channels == 3 || channels == 4) && image.channels() != 3) {
+    } else if ((channels == 3 || channels == 4) && image.channels() != 3) {
         cout << "Converted "<< image.channels() << "-channel image to 3-channel BGR" << endl;
         cvtColor(image, image, (image.channels() == 4) ? COLOR_BGRA2BGR : COLOR_GRAY2BGR);
         
