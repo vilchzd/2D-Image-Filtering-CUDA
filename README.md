@@ -1,8 +1,14 @@
 # 2D-Image-Filtering-CUDA
+<div align="center">
+  <img src="media/parallel.png" alt="Parallel">
+</div>
+
+
 
 # Benchmark
-<div align="center">
 
+<div align="center">
+  
 | Kernel Size  | Block Size  | Avg CPU (ms) ± | Avg GPU (ms) ± | Speedup (×) |
 |--------------|-------------|----------------|----------------|--------------|
 | **3×3**      | 8           | 434.009 ± 6.409 | 9.807 ± 0.165 | 44.256 |
@@ -20,5 +26,17 @@
 | **49×49**    | 8           | 88621.828 ± 1720.532 | 142.777 ± 1.371 | 620.699 |
 |              | 16          | 86137.703 ± 1458.251 | 135.484 ± 1.478 | 635.775 |
 |              | 32          | 89228.289 ± 2671.449 | 134.277 ± 1.595 | 664.507 |
-
 </div>
+
+<div align="center">
+  <img src="media/heatmap.png" alt="Heatmap">
+</div>
+
+<div align="center">
+  <img src="media/execution_time.png" alt="Execution Time">
+</div>
+
+<div align="center">
+  <img src="media/speedup.png" alt="Speedup">
+</div>
+
