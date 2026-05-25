@@ -3,9 +3,39 @@
   <img src="media/parallel.png" alt="Parallel">
 </div>
 
+# Box Blur
+
+3 channel input png image 
+
+The blur used in this script is called a box blur, which computes each output pixel from the average of neigboring pixels of the base image, its intensity is define by a blur radius or kernel size of size $NxN$ defined as:
+
+Kernel size\
+$(2*grid + 1) x (2*grid + 1)$
+
+Where grid is the distance from the center pixel to the furthest pixel from it, for example; 
+
+$grid = 1 , 3x3\  kernel$ \
+$grid = 3 , 5x5\  kernel$ 
+
+This algorithm is of $O(n)^2$ complexity so the execution time grows quadratically with as the blur radius increases
+
+
+# GPU Acceleration
+
+In order to ease the computational load parallelism and shared memory optimization
+
+## Paralelism
+
+## Shared Memory
+Each thread reads $(2*grid+1)^2$
+## Tiles
+
+## Zero Padding
 
 
 # Benchmark
+
+end-to-end blocking GPU pipeline vs CPU loop
 
 <div align="center">
   
