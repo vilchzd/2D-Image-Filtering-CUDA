@@ -37,22 +37,14 @@ to reduce the cost of repeatedly accessing neighboring pixels.
 5. Calculate the blur using the shared-memory tile.
 6. Write the resulting pixel to the output image.
 
-
-## Paralelism
-
-The input image is divided into blocks of `BLOCK_SIZE × BLOCK_SIZE` threads.
-
 <div align="center">
   <img src="media/mountain.png" alt="mountain">
 </div>
 
-<div align="center">
-  <img src="media/mountain_grid.png" alt="mountain_grid">
-</div>
 
-<div align="center">
-  <img src="media/mountain_shared.png" alt="mountain_grid">
-</div>
+## Paralelism
+
+The input image is divided into blocks of `BLOCK_SIZE × BLOCK_SIZE` threads.
 
 Each thread is responsible for calculating one output pixel.
 
@@ -67,14 +59,25 @@ Each thread reads $(2\cdot\mathrm{grid}+1)^2$
 coasled memory
 ## Tiles
 
+In order to perform a box blur over the whole image using parallelism, the image is divided into chunks of BLOCK_SIZE × BLOCK_SIZE, where each chunk is assigned to a CUDA block. 
+
 <div align="center">
-  <img src="media/block_tile.png" alt="blocks_tile">
+  <img src="media/mountain_grid.png" alt="mountain_grid">
+</div>
+Each pixel from the global image is mapped into smaller chunks known as tiles. 
+
+
+The CUDA block then maps its chunk into a shared-memory tile. A tile is a squared image segment that contains the original image chunk of BLOCK_SIZE × BLOCK_SIZE plus an outer edge in every direction consisting of the grid radius in pixels, known as a halo grid.
+
+<div align="center">
+  <img src="media/mountain_shared.png" alt="mountain_grid">
 </div>
 
-Each pixel from the global image is mapped into smaller chunks known as tiles.
-<div align="center">
-  <img src="media/tiles.png" alt="tiles">
-</div>
+
+The halo is a collection of pixels used to calculate the blur of the chunk edges using adjacent pixels outside of the block. This is done by loading the original image pixels that neighbor the outer pixels of the chunk. However, when a pixel corresponds to the original image edges, the halo has to perform a technique called zero padding.
+
+
+
 
 The image is divided into smaller regions called **tiles**. Each CUDA
 thread block processes one tile, with the threads in the block
