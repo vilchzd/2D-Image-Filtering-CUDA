@@ -7,35 +7,89 @@
 
 3 channel input png image 
 
-The blur used in this script is called a box blur, which computes each output pixel from the average of neigboring pixels of the base image, its intensity is define by a blur radius or kernel size of size $NxN$ defined as:
+The blur used in this script is called a box blur, which computes each output pixel from the average of neigboring pixels of the base image, its intensity is define by a blur radius or kernel size of size $N\times N$ defined as:
 
 Kernel size\
-$(2*grid + 1) x (2*grid + 1)$
+$(2\cdot\mathrm{grid} + 1) \cdot (2\cdot\mathrm{grid} + 1)$
 
 Where grid is the distance from the center pixel to the furthest pixel from it, for example; 
 
-$grid = 1 , 3x3\  kernel$ \
-$grid = 3 , 5x5\  kernel$ 
+$grid = 1 , 3\times3\  kernel$ \
+$grid = 3 , 5\times5\  kernel$ 
 
 This algorithm is of $O(n)^2$ complexity so the execution time grows quadratically with as the blur radius increases
 
 
 # GPU Acceleration
 
-In order to ease the computational load parallelism and shared memory optimization
+In order to ease the computational load parallelism and shared memory optimization are used using various techniques to boost the calculation speed.
+
+The GPU implementation takes advantage of parallelism and shared memory
+to reduce the cost of repeatedly accessing neighboring pixels.
+
+
+
+
+1. Assign threads to output pixels.
+2. Load the required image region into shared memory.
+3. Include the surrounding halo pixels required by the blur kernel.
+4. Synchronize the threads.
+5. Calculate the blur using the shared-memory tile.
+6. Write the resulting pixel to the output image.
+
 
 ## Paralelism
 
+The input image is divided into blocks of `BLOCK_SIZE × BLOCK_SIZE` threads.
+
+<div align="center">
+  <img src="media/mountain.png" alt="mountain">
+</div>
+
+<div align="center">
+  <img src="media/mountain_grid.png" alt="mountain_grid">
+</div>
+
+<div align="center">
+  <img src="media/mountain_shared.png" alt="mountain_grid">
+</div>
+
+Each thread is responsible for calculating one output pixel.
+
+The global coordinates of the pixel processed by a thread are calculated
+from its thread and block indices:
+
+int x = threadIdx.x + BLOCK_SIZE * blockIdx.x;
+int y = threadIdx.y + BLOCK_SIZE * blockIdx.y;
+
 ## Shared Memory
-Each thread reads $(2*grid+1)^2$
+Each thread reads $(2\cdot\mathrm{grid}+1)^2$
+coasled memory
 ## Tiles
 
-## Zero Padding
+<div align="center">
+  <img src="media/block_tile.png" alt="blocks_tile">
+</div>
 
+Each pixel from the global image is mapped into smaller chunks known as tiles.
+<div align="center">
+  <img src="media/tiles.png" alt="tiles">
+</div>
+
+The image is divided into smaller regions called **tiles**. Each CUDA
+thread block processes one tile, with the threads in the block
+cooperatively loading the required pixels into shared memory.
+
+## Zero Padding
+With the aim of handling halo pixels a technique called zero padding was employed, basically
 
 # Benchmark
 
-end-to-end blocking GPU pipeline vs CPU loop
+In order to measure the algortihm's performance when it comes to execution time a benchmark was carried out for both the CPU and GPU implementation of the box blur, for the GPU test an NVIDIA RTX 3050 GPU was used.
+
+With the intention of comparing how does the image resolution as well as the number of blocks launched at the kernel affect the speedup, a test srcipt was used which contemplates cpu and gpu warmup and does 15 runs for each indivdual configuration to extract average execution time with standard deviation thus providing more accurate results. The obtanined measurements are end-to-end blocking GPU pipeline vs CPU loop, meaning that individual kernel execution is not measured and only the time that the full blur algorithm takes is recorded.
+
+
 
 <div align="center">
 
