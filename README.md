@@ -7,7 +7,7 @@
 
 3 channel input png image 
 
-The blur used in this script is called a box blur, which computes each output pixel from the average of neigboring pixels of the base image, its intensity is define by a blur radius or kernel size of size $N\times N$ defined as:
+The blur used in this script is called a box blur, which computes each output pixel from the average of neighboring pixels of the base image, its intensity is define by a blur radius or kernel size of size $N\times N$ defined as:
 
 Kernel size\
 $(2\cdot\mathrm{grid} + 1) \cdot (2\cdot\mathrm{grid} + 1)$
@@ -22,7 +22,7 @@ This algorithm is of $O(n)^2$ complexity so the execution time grows quadratical
 
 # GPU Acceleration
 
-In order to ease the computational load parallelism and shared memory optimization are used using various techniques to boost the calculation speed.
+In order to ease the computational load parallelism and shared memory optimization were used in conjuction with various techniques to boost the calculation speed.
 
 The GPU implementation takes advantage of parallelism and shared memory
 to reduce the cost of repeatedly accessing neighboring pixels.
@@ -42,49 +42,51 @@ to reduce the cost of repeatedly accessing neighboring pixels.
 </div>
 
 
-## Paralelism
+## Parallelism
 
-The input image is divided into blocks of `BLOCK_SIZE × BLOCK_SIZE` threads.
-
-Each thread is responsible for calculating one output pixel.
+To make the most of parallelism the input image is divided into chunks of `BLOCK_SIZE × BLOCK_SIZE` pixels, where each chunk is assigned to a CUDA block and each thread is responsible for calculating one output pixel.
 
 The global coordinates of the pixel processed by a thread are calculated
 from its thread and block indices:
 
-int x = threadIdx.x + BLOCK_SIZE * blockIdx.x;
-int y = threadIdx.y + BLOCK_SIZE * blockIdx.y;
+`int x = threadIdx.x + BLOCK_SIZE * blockIdx.x`
 
-## Shared Memory
-Each thread reads $(2\cdot\mathrm{grid}+1)^2$
-coasled memory
-## Tiles
+`int y = threadIdx.y + BLOCK_SIZE * blockIdx.y`
 
-In order to perform a box blur over the whole image using parallelism, the image is divided into chunks of BLOCK_SIZE × BLOCK_SIZE, where each chunk is assigned to a CUDA block. 
+### Tiles
+
+The `BLOCK_SIZE × BLOCK_SIZE` chunk assigned to each CUDA block is mapped into a shared-memory tile.
 
 <div align="center">
   <img src="media/mountain_grid.png" alt="mountain_grid">
 </div>
-Each pixel from the global image is mapped into smaller chunks known as tiles. 
 
-
-The CUDA block then maps its chunk into a shared-memory tile. A tile is a squared image segment that contains the original image chunk of BLOCK_SIZE × BLOCK_SIZE plus an outer edge in every direction consisting of the grid radius in pixels, known as a halo grid.
+A tile is a square image segment that contains the original image chunk of BLOCK_SIZE × BLOCK_SIZE plus an outer edge in every direction cwith a width equal to the grid radius in pixels, known as a halo.
 
 <div align="center">
   <img src="media/mountain_shared.png" alt="mountain_grid">
 </div>
 
+The halo is the outer region of the tile used to calculate the blur of the chunk edges using adjacent pixels outside of the chunk. This is done by loading the original image pixels that neighbor the outer pixels of the chunk. However, if a pixel corresponds to a position outside of the original image boundaries, the halo has to use a technique called zero padding.
 
-The halo is a collection of pixels used to calculate the blur of the chunk edges using adjacent pixels outside of the block. This is done by loading the original image pixels that neighbor the outer pixels of the chunk. However, when a pixel corresponds to the original image edges, the halo has to perform a technique called zero padding.
+### Zero Padding
 
+The technique known as zero padding solves the problem of calculating the blur for the edge pixels of the original image, where neighboring pixels do not exist, by adding zero-value pixels to the halo. This provides enough values to compute the blur, however, it creates a dark border on the output image proportional to the grid radius.
 
+<div align="center">
+  <img src="media/zero_pad.png" alt="zero_pad">
+</div>
 
+As shown in the previous image, a chunk taken from the upper-left corner of the original image has black pixels added to the halo where neighboring pixels are not present, with the purpose of providing enough pixels around each original image pixel to compute its blur. Nonetheless, having zero values lowers the average thus creating a dark border around the output image.  
 
-The image is divided into smaller regions called **tiles**. Each CUDA
-thread block processes one tile, with the threads in the block
-cooperatively loading the required pixels into shared memory.
+### Shared Memory
 
-## Zero Padding
-With the aim of handling halo pixels a technique called zero padding was employed, basically
+Shared memory is a fast memory space located on the GPU that is shared between all threads within the same CUDA block. It can be used to store data that is repeatedly accessed by multiple threads, reducing the need to access slower global memory.
+
+Instead of having each thread repeatedly access neighboring pixels from global memory, the threads cooperatively load the required image region into shared memory. The pixels are loaded from global memory using coalesced memory accesses, where neighboring threads access neighboring memory locations, allowing the GPU to perform these accesses efficiently.
+
+After the tile is loaded, the threads synchronize to ensure all pixels in the tile are available. Each thread then reads $(2\cdot\mathrm{grid}+1)^2$ pixels from shared memory to calculate its output pixel.
+
 
 # Benchmark
 
