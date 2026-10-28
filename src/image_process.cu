@@ -14,15 +14,15 @@ __global__ void gpu_blurGRAY(unsigned char* input, unsigned char* output, int wi
     int x = threadIdx.x + BLOCK_SIZE * blockIdx.x; // Global pixel positions
     int y = threadIdx.y + BLOCK_SIZE * blockIdx.y; 
     
-    int shared_x = threadIdx.x + grid; // Maps center pixel
+    int shared_x = threadIdx.x + grid;             //target pixel in shared memory
     int shared_y = threadIdx.y + grid;
     int shared_width = BLOCK_SIZE + 2 * GRID_SIZE; //tile width
 
-    int block_x = threadIdx.x;
-    int block_y = threadIdx.y;
+    int thread_x = threadIdx.x;
+    int thread_y = threadIdx.y;
 
-    for (int tile_y = block_y; tile_y < shared_width; tile_y += BLOCK_SIZE) {
-        for (int tile_x = block_x; tile_x < shared_width; tile_x += BLOCK_SIZE) {
+    for (int tile_y = thread_y; tile_y < shared_width; tile_y += BLOCK_SIZE) {
+        for (int tile_x = thread_x; tile_x < shared_width; tile_x += BLOCK_SIZE) {
 
             int gx = blockIdx.x * BLOCK_SIZE + tile_x - grid;
             int gy = blockIdx.y * BLOCK_SIZE + tile_y - grid;
@@ -138,15 +138,15 @@ __global__ void gpu_blurBGR(unsigned char* input, unsigned char* output, int wid
     int x = threadIdx.x + BLOCK_SIZE * blockIdx.x; //global pixel positions
     int y = threadIdx.y + BLOCK_SIZE * blockIdx.y; 
     
-    int shared_x = threadIdx.x + grid; // Maps center pixel
+    int shared_x = threadIdx.x + grid;             //target pixel in shared memory
     int shared_y = threadIdx.y + grid;
     int shared_width = BLOCK_SIZE + 2 * GRID_SIZE; //tile width
 
-    int block_x = threadIdx.x;
-    int block_y = threadIdx.y;
+    int thread_x = threadIdx.x;
+    int thread_y = threadIdx.y;
 
-    for (int tile_y = block_y; tile_y < shared_width; tile_y += BLOCK_SIZE) {
-        for (int tile_x = block_x; tile_x < shared_width; tile_x += BLOCK_SIZE) {
+    for (int tile_y = thread_y; tile_y < shared_width; tile_y += BLOCK_SIZE) {
+        for (int tile_x = thread_x; tile_x < shared_width; tile_x += BLOCK_SIZE) {
 
             int gx = blockIdx.x * BLOCK_SIZE + tile_x - grid;
             int gy = blockIdx.y * BLOCK_SIZE + tile_y - grid;
@@ -156,6 +156,7 @@ __global__ void gpu_blurBGR(unsigned char* input, unsigned char* output, int wid
             if (gx >= 0 && gx < width && gy >= 0 && gy < height) {
                 
                 int in_index = (gy * width + gx) * 3;
+
                 tile[sh_index + 0] = input[in_index + 0];
                 tile[sh_index + 1] = input[in_index + 1];
                 tile[sh_index + 2] = input[in_index + 2];
@@ -185,7 +186,7 @@ __global__ void gpu_blurBGR(unsigned char* input, unsigned char* output, int wid
                 int blur_y = shared_y + grid_y;
                 int blur_x = shared_x + grid_x;
 
-                int sh_index = (blur_y * shared_width + blur_x) * 3;
+                int sh_index = (blur_y * shared_width + blur_x) * 3; //linear position in shared memory
 
                 blur_sum_B += tile[sh_index + 0];
                 blur_sum_G += tile[sh_index + 1];

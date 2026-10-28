@@ -55,13 +55,13 @@ from its thread and block indices:
 
 ### Tiles
 
-The `BLOCK_SIZE × BLOCK_SIZE` chunk assigned to each CUDA block is mapped into a shared-memory tile.
+Every `BLOCK_SIZE × BLOCK_SIZE` chunk assigned to each CUDA block is mapped into a shared-memory tile.
 
 <div align="center">
   <img src="media/mountain_grid.png" alt="mountain_grid">
 </div>
 
-A tile is a square image segment that contains the original image chunk of BLOCK_SIZE × BLOCK_SIZE plus an outer edge in every direction cwith a width equal to the grid radius in pixels, known as a halo.
+A tile is a square image segment that contains the original image chunk of BLOCK_SIZE × BLOCK_SIZE plus an outer edge in every direction with a width equal to the grid radius in pixels, known as a halo.
 
 <div align="center">
   <img src="media/mountain_shared.png" alt="mountain_grid">
@@ -87,6 +87,15 @@ Instead of having each thread repeatedly access neighboring pixels from global m
 
 After the tile is loaded, the threads synchronize to ensure all pixels in the tile are available. Each thread then reads $(2\cdot\mathrm{grid}+1)^2$ pixels from shared memory to calculate its output pixel.
 
+### Blur calculation
+
+After the tile is loaded into shared memory, `__syncthreads()` is used to ensure that all threads have finished loading their portion of the tile before any thread begins the blur calculation.
+
+The `if (x < width && y < height)` condition ensures that threads corresponding to pixels outside the image boundaries do not calculate or write an output pixel.
+
+Each thread then iterates through the $(2\cdot\mathrm{grid}+1) \times (2\cdot\mathrm{grid}+1)$ neighborhood centered around its corresponding pixel. The pixel values are read from the shared-memory tile and accumulated separately for the blue, green, and red channels.
+
+The total number of pixels in the neighborhood is stored in `count`. The average for each channel is then calculated by dividing its accumulated value by `count`, and the resulting BGR values are written to the corresponding pixel in the output image.
 
 # Benchmark
 
